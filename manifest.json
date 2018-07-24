@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+  "name": "Jira Team Analytics",
+  "version": "0.0.1",
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "page_action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "http://*/",
+    "activeTab",
+    "declarativeContent"
+  ]
+}
