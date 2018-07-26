@@ -1,26 +1,60 @@
 <html>
   <head>
     <style>
+      .issue-title {
+        display: inline-block;
+        width: 100px;
+      }
+      .issue-bars {
+        display: inline-block;
+        width: calc(100% - 110px);
+      }
       .issue-bar {
-        border: 1px solid red;
+        display: inline-block;
+        border: 1px solid;
+        height: 10px;
+      }
+      .background {
+        padding-left: 100px;
+      }
+      .week-legend {
+        display: inline-block;
       }
     </style>
   </head>
   <body style="width: 800px">
-    <div id="content">
-      <input id="filter-query" type="text" size="120"/>
+    <div id="app">
+      <div class="config">
+        <input @change="saveConfig" v-model="filterQuery" type="text" size="120"/>,
+        <input @change="saveConfig" v-model="weeks" type="text" size="3"/> weeks back, expecting
+        <input @change="saveConfig" v-model="expectedDailyPoints" type="text" size="3"/> story points per day. Unestimated issues count as
+        <input @change="saveConfig" v-model="defaultPoints" type="text" size="3"/> story points.
+      </div>
+
+      <hr>
+
+      <div id="issue-schedule" style="width: 100%; position: relative;">
+        <div class="background">
+          <div class="week-legend" v-for="week in weekLegend" v-bind:style="{ width: (1 / weeks) * 100 + '%' }">{{ week.number }}</div>
+        </div>
+        <div class="issues">
+          <div v-for="issue in issueBars">
+            <div class="issue-title">{{ issue.key }}</div>
+            <div class="issue-bars">
+              <div class="issue-bar" v-for="bar in issue.bars" v-bind:style="{ width: bar.width, marginLeft: bar.offsetLeft, backgroundColor: bar.backgroundColor }"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div id="issue-schedule" style="width: 100%;">
-    </div>
-
+    <script src="vue.js"></script>
     <script src="lodash.js"></script>
     <script src="moment.js"></script>
     <script src="config.js"></script>
     <script src="jira-client.js"></script>
     <script src="issue.js"></script>
     <script src="workload-service.js"></script>
-    <script src="bind.min.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

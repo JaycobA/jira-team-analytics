@@ -1,5 +1,6 @@
 {
   "manifest_version": 2,
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "name": "Jira Team Analytics",
   "version": "0.0.1",
   "background": {

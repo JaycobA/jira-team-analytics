@@ -1,37 +1,51 @@
 Config.withInferredConfig((config) => {
   const API_URL = config.get("origin") + '/rest';
+  let fullPeriodLength = config.get("weeks") * 7;
 
-  let data = Bind({
+  let data = {
     filterQuery: config.get("filterQuery"),
-    issues: []
-  }, {
-    filterQuery: {
-      dom: '#filter-query',
-      callback: (value) => {
-        config.set("filterQuery", value);
-        config.save(config);
+    weeks: config.get("weeks"),
+    expectedDailyPoints: config.get("expectedDailyPoints"),
+    defaultPoints: config.get("defaultPoints"),
+    issues: [],
+    weekLegend: []
+  };
+
+  let app = new Vue({
+    el: '#app',
+    data,
+    computed: {
+      issueBars: () => {
+        return _.map(data.issues, (issue) => {
+          let daysFromPeriodStart = (date) => {
+            let periodStart = moment().subtract(config.get("weeks"), 'week');
+            return date.diff(periodStart, 'days');
+          }
+
+          let bars = _.map(issue.workPeriods, (workPeriod) => {
+            let daysToStart = Math.max(0, daysFromPeriodStart(workPeriod.start));
+            let daysToEnd = daysFromPeriodStart(workPeriod.end);
+            let workPeriodLength = daysToEnd - daysToStart + 1;
+
+            let width = (workPeriodLength / fullPeriodLength) * 100 + '%';
+            let offsetLeft = (daysToStart / fullPeriodLength) * 100 + '%';
+            let expectedPointsPerDay = config.get("expectedDailyPoints");
+            let backgroundColor = `hsl(${Math.min(expectedPointsPerDay, issue.workPerDayInProgress) / expectedPointsPerDay * 120}, 80%, 80%)`;
+
+            return { width, offsetLeft, backgroundColor };
+          });
+
+          return { key: issue.key, bars };
+        });
       }
     },
-    issues: {
-      dom: '#issue-schedule',
-      transform: (issue) => {
-        let daysFromPeriodStart = (date) => {
-          let periodStart = moment().subtract(8, 'week');
-          return date.diff(periodStart, 'days');
-        }
-
-        let fullPeriodLength = 8 * 7;
-
-        let bars = _.reduce(issue.workPeriods, (html, workPeriod) => {
-          let daysToStart = daysFromPeriodStart(workPeriod.start);
-          let daysToEnd = daysFromPeriodStart(workPeriod.end);
-          let workPeriodLength = daysToEnd - daysToStart + 1;
-
-          let issueWidth = (workPeriodLength / fullPeriodLength) * 100 + '%';
-          let offsetLeft = (daysToStart / fullPeriodLength) * 100 + '%';
-          return html + `<div class="issue-bar" style="width: ${issueWidth}; margin-left: ${offsetLeft}"></div>`
-        }, "");
-        return `<div><div class="issue-title">${issue.key}</div>${bars}</div>`;
+    methods: {
+      saveConfig: () => {
+        config.set("filterQuery", data.filterQuery);
+        config.set("weeks", data.weeks);
+        config.set("expectedDailyPoints", data.expectedDailyPoints);
+        config.set("defaultPoints", data.defaultPoints);
+        config.save();
       }
     }
   });
@@ -51,6 +65,10 @@ Config.withInferredConfig((config) => {
 
     for(let i = 0; i < workDone.length; i++) {
       data.issues.push(workDone[i]);
+    }
+
+    for(let i = 0; i < config.get("weeks"); i++) {
+      data.weekLegend.push({ number: i });
     }
   });
 });
