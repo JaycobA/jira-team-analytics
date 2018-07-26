@@ -30,7 +30,7 @@ class Issue {
 
   getWorkPeriods() {
     let workPeriod;
-    return _.reduce(this.statusChanges, (periods, statusChange) => {
+    let workPeriods = _.reduce(this.statusChanges, (periods, statusChange) => {
       let date = moment(statusChange.date);
 
       if(statusChange.to == 'In Progress') {
@@ -38,9 +38,18 @@ class Issue {
       } else {
         workPeriod.end = date.startOf('day');
         periods.push(workPeriod);
+        workPeriod = null;
       }
+
       return periods;
     }, []);
+
+    if(workPeriod != null) {
+      workPeriod.end = moment().startOf('day');
+      workPeriods.push(workPeriod);
+    }
+
+    return workPeriods;
   }
 
   getTimeInProgress() {
