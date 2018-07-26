@@ -1,17 +1,17 @@
 class Issue {
-  constructor(key, fields, changelog) {
+  constructor(key, fields, changelog, storyPoints) {
     this.key = key;
     this.fields = fields;
     this.changelog = changelog;
     this.statusChanges = this.getStatusChanges();
     this.workPeriods = this.getWorkPeriods();
     this.timeInProgress = this.getTimeInProgress();
-    this.storyPoints = this.fields.customfield_10006 || 1;
+    this.storyPoints = storyPoints;
     this.workPerDayInProgress = this.storyPoints / this.timeInProgress;
   }
 
-  static fromApiResult(apiIssue) {
-    return new Issue(apiIssue.key, apiIssue.fields, apiIssue.changelog);
+  static fromApiResult(apiIssue, defaultStoryPoints) {
+    return new Issue(apiIssue.key, apiIssue.fields, apiIssue.changelog, apiIssue.fields.customfield_10006 || defaultStoryPoints);
   }
 
   getStatusChanges() {

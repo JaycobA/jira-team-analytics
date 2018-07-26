@@ -37,12 +37,12 @@ Config.withInferredConfig((config) => {
   });
 
   let jiraClient = new JiraClient(API_URL);
-  let jql = `${config.get("filterQuery")} AND issuetype not in subTaskIssueTypes() and resolutiondate > -6w order by resolutiondate desc`;
+  let jql = `${config.get("filterQuery")} AND issuetype not in subTaskIssueTypes() and issuetype != "Epic" and status was "In Progress" after -${config.get("weeks")}w order by resolutiondate ASC`;
 
   jiraClient.search(jql).then((issues) => {
     let workDone = _.chain(issues)
       .map((issue) => {
-        return Issue.fromApiResult(issue);
+        return Issue.fromApiResult(issue, config.get("defaultPoints"));
       }).filter((issue) => {
         return issue.timeInProgress > 0;
       }).value();
